@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Barcode Benchmark</title>
+  <meta name="description" content="Benchmark barcode decoding across reproducible preprocessing configurations.">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <div><span class="eyebrow">BARCODE BENCHMARK · ZXING-C++ ENGINE</span><h1>Barcode Benchmark</h1></div>
+    <div class="reader-controls">
+      <label class="switch-control" title="Assume the ROI contains only a clean, perfectly aligned barcode">
+        <span>Pure barcode</span><input id="pureToggle" type="checkbox"><i></i><b id="pureState">OFF</b>
+      </label>
+      <label class="switch-control" title="Enable extra inverted-polarity and downscaled search passes">
+        <span>Try harder</span><input id="harderToggle" type="checkbox" checked><i></i><b id="harderState">ON</b>
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <section id="uploadCard" class="upload-card" tabindex="0">
+      <input id="fileInput" type="file" accept="image/*" hidden>
+      <div class="upload-icon">＋</div>
+      <div><strong>Drop an image or web image here</strong><p>or click to choose PNG, JPG, TIFF, or BMP</p></div>
+    </section>
+
+    <section class="workspace">
+      <div class="viewer-panel">
+        <div class="toolbar">
+          <div class="tool-group">
+            <button id="boxBtn" class="tool active" title="Box mode (B)"><span>□</span> Box <kbd>B</kbd></button>
+            <button id="polygonBtn" class="tool" title="Polygon mode (P)"><span>◇</span> Polygon <kbd>P</kbd></button>
+            <label class="format-control">Barcode type
+              <select id="formatSelect">
+                {% for value, label in barcode_formats.items() %}
+                <option value="{{ value }}" {% if value == 'DataMatrix' %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+          </div>
+          <div class="tool-group">
+            <button id="fitBtn" class="tool" title="Fit image to panel">Fit image</button>
+            <span id="zoomLabel" class="zoom-label">100%</span>
+            <button id="saveBtn" class="tool" title="Save successful latest run (S)">Save found <kbd>S</kbd></button>
+            <button id="downloadBtn" class="tool" title="Download all runs (D)">Download all <kbd>D</kbd></button>
+            <button id="resetBtn" class="tool danger" title="Reset (R)">Reset <kbd>R</kbd></button>
+          </div>
+        </div>
+        <div id="canvasShell" class="canvas-shell empty">
+          <canvas id="canvas"></canvas>
+          <div id="emptyState">Upload an image to begin</div>
+          <div id="working" class="working hidden"><div class="spinner"></div><b>Running barcode tests…</b><span>This can take a moment.</span></div>
+        </div>
+        <p id="hint" class="hint">Box mode: drag tightly around a Data Matrix.</p>
+      </div>
+
+      <aside class="run-panel">
+        <div class="panel-title"><div><span class="eyebrow">SESSION</span><h2>Run stack</h2></div><span id="runCount" class="count">0</span></div>
+        <div id="runList" class="run-list"><p class="muted">Your analyzed regions will appear here.</p></div>
+      </aside>
+    </section>
+
+    <section id="results" class="results hidden">
+      <div class="results-head">
+        <div><span class="eyebrow">ANALYSIS</span><h2 id="resultTitle">Run results</h2></div>
+        <div class="result-totals"><span class="success"><b id="successCount">0</b> successful attempts</span><span><b id="maxBarcodeCount">0</b> most barcodes in one attempt</span><span><b id="failureCount">0</b> failed</span><span><b id="runTime">0</b> ms total</span><span><b id="runMemory">0</b> MB RSS Δ</span></div>
+      </div>
+      <div class="table-wrap"><table id="matrix"></table></div>
+      <p class="metric-note">Prep time measures construction of that image variation. Cell time separates ZXing decoding from total variation cost (preprocess + rotate + decode). RSS deltas are approximate because Python and OpenCV reuse allocated process memory.</p>
+
+      <div class="detected-summary"><b>Formats detected in this run</b><div id="detectedFormats"></div></div>
+      <div class="filter-bar">
+        <label>Find steps<input id="stepFilter" type="search" placeholder="e.g. CLAHE sharpen 90"></label>
+        <label>Status<select id="statusFilter"><option value="all">All results</option><option value="success">Successful only</option><option value="failure">Failed only</option></select></label>
+        <label>Detected format<select id="detectedFormatFilter"><option value="all">All formats</option></select></label>
+        <label>Minimum barcodes<input id="minimumBarcodeFilter" type="number" min="0" step="1" value="0"></label>
+        <label>Successful sort<select id="successSort"><option value="count">Most barcodes, then fastest</option><option value="time">Fastest total time</option></select></label>
+        <button id="clearFiltersBtn" class="tool">Clear filters</button>
+      </div>
+
+      <section class="attempt-section">
+        <div class="section-title"><h2>Successful detections</h2><span id="successBadge" class="badge good">0</span></div>
+        <div id="successGrid" class="attempt-grid"></div>
+      </section>
+      <section class="attempt-section failures">
+        <div class="section-title"><h2>Failed attempts</h2><span id="failureBadge" class="badge">0</span></div>
+        <div id="failureGrid" class="attempt-grid"></div>
+      </section>
+    </section>
+  </main>
+  <dialog id="formatDialog" class="format-dialog">
+    <span class="eyebrow">FORMAT DETECTED</span>
+    <h2 id="formatDialogTitle">Use detected format?</h2>
+    <p id="formatDialogText"></p>
+    <div class="dialog-actions">
+      <button id="keepAutoBtn" class="tool">Keep Auto Detect</button>
+      <button id="useFormatBtn" class="tool active">Use detected format</button>
+    </div>
+  </dialog>
+  <div id="toast" class="toast"></div>
+  <script>window.EXPECTED_VALUE = {{ expected_value|tojson }};</script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+# Local environments and secrets
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Barcode Lab runtime output
+.web_data/
+cutouts/
+*.zip
+
+# Local workspace/agent context (not application source)
+/AGENTS.md
+/sources/
+/.agents/
+/.codex/
+/.repo-git/
+
+# Keep internal research and planning Markdown private. Only the three public
+# Markdown documents below belong in the repository.
+*.md
+!README.md
+!CONTRIBUTING.md
+!CODE_OF_CONDUCT.md
+
+# Local, uncurated test images at the repository root
+/image*.png
+/image*.jpg
+/image*.jpeg
+/image*.bmp
+/image*.tif
+/image*.tiff
+
+# Build and packaging output
+build/
+dist/
+*.egg-info/
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
