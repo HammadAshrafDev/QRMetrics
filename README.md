@@ -1,69 +1,33 @@
-# Barcode Benchmark
+# QRMetrics
 
-Barcode Benchmark is a local visual workbench for comparing barcode preprocessing
-recipes by detection completeness, decoding time, total processing time, and
-approximate memory impact.
+**Find the barcode preprocessing recipe that reads the most codes—and see what it costs.**
 
-The first release uses **ZXing-C++** through its Python binding. The project is designed
-to support additional decoding engines later—including **pyzbar/ZBar**, OpenCV's
-`BarcodeDetector`, and **pylibdmtx**—so the same image regions and preprocessing recipes
-can be compared fairly across popular libraries.
+QRMetrics is a local visual workbench for testing barcode regions against many image-processing configurations. Draw a box or four-point polygon around the area you care about, and QRMetrics compares the resulting reads by completeness, speed, and approximate memory impact.
 
-## Why this exists
+The first release uses [ZXing-C++](https://github.com/zxing-cpp/zxing-cpp). The longer-term goal is a shared benchmark for popular barcode libraries, including pyzbar/ZBar, OpenCV `BarcodeDetector`, and pylibdmtx.
 
-The fastest attempt is not useful if it misses most of the symbols. If an image has 20
-barcodes, a configuration that finds all 20 should rank above one that finds five,
-even when the partial result returns sooner.
+> QRMetrics is an experiment workbench, not a claim that one preprocessing recipe is universally best. Its value is showing what works on *your* images, regions, and hardware.
 
-Barcode Benchmark therefore ranks successful attempts by:
+## Why QRMetrics?
 
-1. Highest number of barcodes detected.
-2. Lowest total configuration time as the tie-breaker.
+A barcode reader can be fast on a clean image and unreliable on the frame that reaches production. Blur, glare, scale, perspective, contrast, and an incomplete region of interest can each change the result.
 
-You can also switch to time-only sorting or filter by a minimum barcode count.
-
-## Current capabilities
-
-- Upload an image, drag in a public web image, or use the local OpenCV interface.
-- Draw a rectangular ROI or a perspective-aware four-point polygon.
-- Zoom to place regions accurately.
-- Select a barcode format or let ZXing-C++ search supported formats.
-- Compare raw input and preprocessing variations at 0°, 90°, 180°, and 270°.
-- See every decoded value, raw bytes, detected format, and orientation.
-- Compare preprocessing, rotation, decode, and total wall time.
-- Inspect output-buffer size and approximate process RSS changes.
-- Rank by barcode count before speed and filter by count, status, format, or steps.
-- Expand result cards for exact recipes and reader flags.
-- Save successful cutouts from the latest run or download all generated cutouts.
-- Keep multiple ROI runs in the session until reset.
-
-Preprocessing experiments include tight cropping, 2×/3× upscaling, contrast stretch,
-gamma correction, CLAHE, adaptive/Otsu/Sauvola/Niblack thresholding, unsharp masking,
-black-hat morphology, closing, erode/dilate sweeps, perspective rectification,
-polarity inversion, denoise-before-sharpen, Wiener deblurring, quiet-zone padding, and
-a combined pipeline.
-
-## Requirements
-
-- Ubuntu/Linux is the currently tested environment.
-- Python 3 with `venv` support.
-- A desktop browser for the web interface.
-
-Windows and macOS support are planned but not yet verified.
+QRMetrics makes those trade-offs visible. It runs the same selected region through a reproducible matrix of preprocessing and orientation tests, then puts successful and failed attempts side by side. Results that recover more barcodes rank above faster but incomplete results; time breaks ties.
 
 ## Quick start
 
-Make the launcher executable if necessary, then run it:
+QRMetrics is currently tested on Ubuntu/Linux and requires Python 3 with `venv` support.
 
 ```bash
+git clone https://github.com/HammadAshrafDev/QRMetrics.git
+cd QRMetrics
 chmod +x start.sh
 ./start.sh
 ```
 
-On first use, the script creates `.venv`, installs `requirements.txt`, starts the local
-server, and opens `http://127.0.0.1:5000`.
+On first launch, the script creates `.venv`, installs the dependencies, starts the local server, and opens [http://127.0.0.1:5000](http://127.0.0.1:5000).
 
-You can also start it manually:
+To start it manually:
 
 ```bash
 python3 -m venv .venv
@@ -72,93 +36,72 @@ pip install -r requirements.txt
 python app.py
 ```
 
-## Using the browser interface
+## From image to recommendation
 
-1. Upload or drop an image.
-2. Choose the expected barcode format. Data Matrix is the default.
-3. Use **Box** and drag around a region, or use **Polygon** and click four corners.
-4. Wait for the preprocessing and rotation matrix to finish.
-5. Compare the successful cards. The default order favors completeness before speed.
-6. Use the minimum-count, status, format, and step filters to narrow the results.
+1. Upload an image, drop a local image, or provide a public image URL.
+2. Draw a bounding box or a perspective-aware four-point polygon around the barcode area.
+3. Choose a barcode format—or let ZXing search all supported formats—and set the reader controls.
+4. QRMetrics tests preprocessing variants and orientations, measuring each attempt.
+5. Compare the reads. By default, configurations that find the most barcodes appear first, with faster configurations winning ties.
 
-Keyboard shortcuts:
+For the complete pipeline, preprocessing matrix, metric definitions, and result-ranking logic, read [How QRMetrics works](HOW_IT_WORKS.md).
+
+## What it can do
+
+- Compare raw and preprocessed versions of an accurately selected image region.
+- Test each variant at 0°, 90°, 180°, and 270° with configurable ZXing search behavior.
+- Report decoded values and formats alongside preprocessing time, decode time, total time, and approximate RSS change.
+- Rank and filter results by barcode count, speed, status, detected format, or applied steps.
+- Preserve several ROI runs for comparison and download successful or complete cutout sets.
+
+The current matrix covers common operations such as scaling, contrast correction, sharpening, denoising, thresholding, morphology, perspective correction, polarity inversion, deblurring, quiet-zone padding, parameter sweeps, and a combined pipeline.
+
+## Using the interface
+
+Upload an image, then use **Box** to drag a rectangular region or **Polygon** to click its four corners. Use the mouse wheel to zoom and **Fit image** to return to the full view.
 
 | Key | Action |
 |---|---|
 | `B` | Box selection mode |
 | `P` | Four-point polygon mode |
 | `R` | Clear all ROI runs |
-| `S` | Save successful cutouts from the latest run |
+| `S` | Download successful cutouts from the latest run |
 | `D` | Download every generated cutout |
 
-Mouse-wheel zoom ranges from the fitted view to 800%. **Fit image** restores the
-full-image view.
+Data Matrix is the default format. Auto detect searches all formats and, after the first successful run, can switch future runs to the detected format. **Pure barcode** defaults to off; **Try harder** defaults to on.
 
-## Reader controls
+## Understanding the results
 
-- **Pure barcode** defaults to OFF. Enable it only for a clean, tightly cropped,
-  perfectly aligned single symbol.
-- **Try harder** defaults to ON. In the installed Python binding, this UI control maps
-  to additional downscale and inverted-polarity searches. Native C++ `TryHarder` is not
-  exposed by this binding and remains enabled internally.
-- Restricting the expected barcode format can reduce unnecessary search work.
+Each result card shows how many barcodes were found, their formats and values, the exact image recipe and reader flags, the generated cutout, and the measured cost of that configuration.
 
-## Reading benchmark results
+The default **Most complete** order uses:
 
-The table separates preprocessing cost from ZXing decoding cost. Each card shows the
-number and formats of barcodes detected, the complete preprocessing recipe, rotation,
-reader flags, timing breakdown, approximate RSS change, and generated cutout.
+1. Higher barcode count.
+2. Lower total configuration time when counts are equal.
 
-RSS deltas are exploratory measurements: Python and OpenCV reuse allocated memory, so
-small before/after differences are not equivalent to true peak memory. Results should
-be compared on the same machine, image, ROI, and software versions.
+Use **Fastest** when latency is the only concern, or set a minimum barcode count to hide incomplete reads. See [How QRMetrics works](HOW_IT_WORKS.md#how-results-are-ranked) before treating a result as a production recommendation.
 
-This release does not yet provide ground-truth precision/recall, repeated-trial
-percentiles, peak-memory sampling, or process CPU utilization. Treat it as an
-experiment workbench rather than a scientific benchmark suite.
+## Decoder support
 
-## Planned decoder backends
+| Backend | Status |
+|---|---|
+| ZXing-C++ | Available in v1 |
+| pyzbar / ZBar | Planned |
+| OpenCV `BarcodeDetector` | Planned |
+| pylibdmtx / libdmtx | Planned |
 
-| Backend | Status | Intended comparison |
-|---|---|---|
-| ZXing-C++ | Available in v1 | Multi-format baseline and current reader controls |
-| pyzbar / ZBar | Planned | Common Python wrapper and 1D/QR workloads |
-| OpenCV `BarcodeDetector` | Planned | OpenCV-native detection and decoding |
-| pylibdmtx / libdmtx | Planned | Data Matrix-focused comparison |
+Future backends should receive the same ROI and image variants, return a normalized result shape, and retain their own library-specific controls. Similarly named options will not be presented as equivalent unless they actually are.
 
-Future backends should consume the same ROI and preprocessed image, return a normalized
-result schema, and expose backend-specific flags without pretending that differently
-named settings are equivalent.
+## Benchmark responsibly
 
-## Project structure
+Measurements are most useful when runs use the same source image, ROI, machine, and software versions. RSS deltas are approximate because Python and OpenCV may reuse allocated memory. QRMetrics does not yet calculate ground-truth precision/recall, peak RSS, CPU utilization, or repeated-trial percentiles.
 
-```text
-app.py                    Flask application and benchmark orchestration
-barcode_bbox_tester.py    Preprocessing recipes and OpenCV desktop interface
-templates/index.html      Browser UI
-static/app.js             Drawing, zoom, run state, sorting, and filters
-static/style.css          Application styling
-requirements.txt          Python dependencies
-start.sh                  Local setup and launcher
-```
-
-Generated uploads, benchmark artifacts, cutouts, virtual environments, and local test
-images are excluded from Git.
-
-## Privacy and security
-
-The server binds to `127.0.0.1`. Uploaded images and generated variations are stored
-under `.web_data` for the running local application. Remote image downloads are limited
-to 15 MB, and private/local network targets are rejected.
-
-Do not upload confidential production images to a deployment you do not control.
+Uploaded images and generated artifacts stay under `.web_data` on the local machine. The server binds to `127.0.0.1`; public-URL downloads are capped at 15 MB and private-network targets are rejected.
 
 ## Contributing
 
-Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing a
-change, and follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+Contributions are welcome, particularly new decoder adapters, repeatable measurements, cross-platform support, and focused preprocessing experiments. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## License
 
-Barcode Benchmark is available under the [MIT License](LICENSE). ZXing-C++ and other
-current or future dependencies retain their own licenses.
+QRMetrics is available under the [MIT License](LICENSE). ZXing-C++ and other current or future dependencies retain their own licenses.

@@ -192,7 +192,7 @@ def upload_image_url():
     url = (request.get_json(silent=True) or {}).get("url", "").strip()
     try:
         validate_remote_host(url)
-        remote = urlopen(Request(url, headers={"User-Agent": "Mozilla/5.0 BarcodeLab/1.0"}), timeout=12)
+        remote = urlopen(Request(url, headers={"User-Agent": "Mozilla/5.0 QRMetrics/1.0"}), timeout=12)
         validate_remote_host(remote.geturl())
         data = remote.read(MAX_REMOTE_IMAGE_BYTES + 1)
         if len(data) > MAX_REMOTE_IMAGE_BYTES:

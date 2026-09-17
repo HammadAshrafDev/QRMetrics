@@ -36,7 +36,7 @@ MORPH_KERNEL_SIZES = (2, 3)
 LOCAL_THRESHOLD_WINDOW = 31
 # ---------------------------------------------------------------------------
 
-WINDOW_NAME = "Barcode ROI tester | B box | P polygon | R reset | S found | D all"
+WINDOW_NAME = "QRMetrics | B box | P polygon | R reset | S found | D all"
 ROTATIONS = {
     "0 deg": None,
     "90 deg": cv2.ROTATE_90_CLOCKWISE,

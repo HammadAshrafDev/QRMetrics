@@ -1,4 +1,4 @@
-# Contributing to Barcode Benchmark
+# Contributing to QRMetrics
 
 Thank you for helping make barcode benchmarks more useful and reproducible.
 

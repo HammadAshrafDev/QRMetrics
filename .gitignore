@@ -16,7 +16,7 @@ __pycache__/
 .coverage
 htmlcov/
 
-# Barcode Lab runtime output
+# QRMetrics runtime output
 .web_data/
 cutouts/
 *.zip
@@ -28,10 +28,11 @@ cutouts/
 /.codex/
 /.repo-git/
 
-# Keep internal research and planning Markdown private. Only the three public
+# Keep internal research and planning Markdown private. Only the public
 # Markdown documents below belong in the repository.
 *.md
 !README.md
+!HOW_IT_WORKS.md
 !CONTRIBUTING.md
 !CODE_OF_CONDUCT.md
 

@@ -2,7 +2,7 @@
 
 ## Our commitment
 
-We are committed to making participation in Barcode Benchmark welcoming and respectful
+We are committed to making participation in QRMetrics welcoming and respectful
 for everyone, regardless of experience level, identity, background, or ability.
 
 ## Expected behavior
