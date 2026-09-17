@@ -1,6 +1,6 @@
 # QRMetrics
 
-**Find the barcode preprocessing recipe that reads the most codes—and see what it costs.**
+**Find the barcode preprocessing recipe that reads the most codes and see what it truly costs.**
 
 QRMetrics is a local visual workbench for testing barcode regions against many image-processing configurations. Draw a box or four-point polygon around the area you care about, and QRMetrics compares the resulting reads by completeness, speed, and approximate memory impact.
 
